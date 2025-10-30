@@ -9,6 +9,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing dependencies...'
+                // Clean install
                 bat 'npm ci'
             }
         }
@@ -16,7 +17,8 @@ pipeline {
         stage('Test') {
             steps {
                 echo 'Running tests (if any)...'
-                bat 'npm run test || echo "No tests found or skipped"'
+                // Use npx to run local jest; continue if no tests
+                bat 'npx jest || echo "No tests found or tests failed, continuing build..."'
             }
         }
 

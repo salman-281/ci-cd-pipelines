@@ -1,12 +1,9 @@
 pipeline {
     agent any
 
-    tools {
-        nodejs 'NodeJS'  // This references the NodeJS installation configured in Jenkins
-    }
-
     environment {
         VERCEL_TOKEN = credentials('VERCEL_TOKEN')
+        PATH = "C:\\Program Files\\nodejs;${env.PATH}"  // Add Node.js to PATH
     }
 
     stages {
@@ -17,7 +14,7 @@ pipeline {
             }
         }
 
-        stage('Setup Node.js') {
+        stage('Verify Node.js') {
             steps {
                 echo 'Verifying Node.js installation...'
                 bat 'node -v'

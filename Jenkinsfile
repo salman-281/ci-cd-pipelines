@@ -1,9 +1,12 @@
 pipeline {
     agent any
 
+    tools {
+        nodejs 'NodeJS'  // This references the NodeJS installation configured in Jenkins
+    }
+
     environment {
-        NODE_VERSION = '20' // Your Node.js version
-        VERCEL_TOKEN = credentials('VERCEL_TOKEN') // Reference your Jenkins credential
+        VERCEL_TOKEN = credentials('VERCEL_TOKEN')
     }
 
     stages {
@@ -16,48 +19,44 @@ pipeline {
 
         stage('Setup Node.js') {
             steps {
-                echo "Using Node.js ${NODE_VERSION}"
-                nodejs(nodeJSInstallationName: 'NodeJS') {
-                    sh 'node -v'
-                    sh 'npm -v'
-                }
+                echo 'Verifying Node.js installation...'
+                bat 'node -v'
+                bat 'npm -v'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 echo 'Installing Next.js dependencies...'
-                sh 'npm ci'
+                bat 'npm ci'
             }
         }
 
         stage('Lint') {
             steps {
                 echo 'Running Next.js lint...'
-                sh 'npm run lint'
+                bat 'npm run lint'
             }
         }
 
         stage('Run Tests') {
             steps {
                 echo 'Running tests...'
-                sh 'npm run test'
+                bat 'npm run test'
             }
         }
 
         stage('Build Next.js') {
             steps {
                 echo 'Building Next.js project...'
-                sh 'npm run build'
+                bat 'npm run build'
             }
         }
 
         stage('Deploy to Vercel') {
             steps {
                 echo 'Deploying Next.js app to Vercel...'
-                sh '''
-                npx vercel --token $VERCEL_TOKEN --prod --confirm
-                '''
+                bat 'npx vercel --token %VERCEL_TOKEN% --prod --confirm'
             }
         }
     }

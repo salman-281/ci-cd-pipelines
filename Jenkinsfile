@@ -3,6 +3,7 @@ pipeline {
 
     environment {
         NODE_VERSION = '20' // Your Node.js version
+        VERCEL_TOKEN = credentials('VERCEL_TOKEN') // Reference your Jenkins credential
     }
 
     stages {
@@ -16,7 +17,6 @@ pipeline {
         stage('Setup Node.js') {
             steps {
                 echo "Using Node.js ${NODE_VERSION}"
-                // Use NodeJS plugin or nvm on agent
                 nodejs(nodeJSInstallationName: 'NodeJS') {
                     sh 'node -v'
                     sh 'npm -v'
@@ -27,7 +27,7 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 echo 'Installing Next.js dependencies...'
-                sh 'npm ci'  // clean install for reproducible builds
+                sh 'npm ci'
             }
         }
 
@@ -52,29 +52,19 @@ pipeline {
             }
         }
 
-        stage('Optional: Export Static') {
-            when {
-                expression { return env.BUILD_TYPE == 'static' }
-            }
+        stage('Deploy to Vercel') {
             steps {
-                echo 'Exporting static HTML for Next.js...'
-                sh 'npm run export'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                echo 'Deploying Next.js app...'
-                // Example deployment commands:
-                // sh 'scp -r .next/* user@server:/var/www/myapp'
-                // Or trigger a Docker build/push
+                echo 'Deploying Next.js app to Vercel...'
+                sh '''
+                npx vercel --token $VERCEL_TOKEN --prod --confirm
+                '''
             }
         }
     }
 
     post {
         success {
-            echo 'Next.js pipeline completed successfully!'
+            echo 'Pipeline completed successfully and deployed to Vercel!'
         }
         failure {
             echo 'Pipeline failed!'
